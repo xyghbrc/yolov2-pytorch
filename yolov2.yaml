@@ -1,0 +1,79 @@
+# global parameters
+seed: 0                # random seed
+gpu_nums: 1            # nums of gpu
+batch_size: 64         # batch_size
+sub_batch: 8           # each incoming network image
+train_epoch: 311       # nums of epoch: ceil(80200 / (16551 / 64))
+batch_size_predict: 1         # predict_batch_size
+random_net: False           # change input_size randomly(multi-scale training)
+
+# data augmentation
+jitter: 0.3
+exposure: 1.5
+saturation: 1.5
+hue: 0.1
+
+# input size
+W: 416        # width
+H: 416        # height
+
+# optimizer
+momentum: 0.9            # SGD momentum
+decay: 0.0005            # weight decay
+learning_rate: 0.001     # learning rate
+burn_in: 1000            # learning rate burn in 1000 steps
+steps: [40000, 60000]    # learning rate change strategy（step）
+scales: [0.1, 0.1]          # stride of learning_rate
+
+# region_layer
+anchors: [1.3221, 1.73145, 3.19275, 4.00944, 5.05587, 8.09892, 9.47112, 4.84053, 11.2364, 10.0071]
+bias_match: True
+classes: 20
+coords: 4
+num: 5
+rescore: True
+# scales of loss
+object_scale: 20.
+noobject_scale: 1.
+class_scale: 1.
+coord_scale: 1.
+
+thresh: .6
+
+# predict thresh
+pr_thresh: 0.005
+iou_thresh: 0.5
+filter_thresh: 0.
+
+# labels
+VOC_NAMES:
+  ['aeroplane', 'bicycle', 'bird', 'boat',
+  'bottle', 'bus', 'car', 'cat', 'chair',
+  'cow', 'diningtable', 'dog', 'horse',
+  'motorbike', 'person', 'pottedplant',
+  'sheep', 'sofa', 'train', 'tvmonitor']
+
+# yolov2 backbone cfg
+net_cfg:
+  # CBL: (in_channels, out_channels, k_size)
+  # maxpool: (k_size, stride)
+  # three2one: (in_channels, out_channels, num_cycle)
+  # reorg: (stride)
+  # route: layers cut
+  [
+    ['CBL', [3, 32, 3]], ['maxpool', [2, 2]],
+    ['CBL', [32, 64, 3]], ['maxpool', [2, 2]],
+    ['three2one', [64, 128, 1]],
+    ['CBL', [64, 128, 3]], ['maxpool', [2, 2]],
+    ['three2one', [128, 256, 1]],
+    ['CBL', [128, 256, 3]], ['maxpool', [2, 2]],
+    ['three2one', [256, 512, 2]],
+    ['CBL', [256, 512, 3]], ['route', '16'],       # route: 16
+    ['maxpool', [2, 2]],
+    ['three2one', [512, 1024, 2]],
+    ['CBL', [512, 1024, 3], [1024, 1024, 3], [1024, 1024, 3]], ['route', '24'],    # route: 24
+    ['CBL', [512, 64, 1]],
+    ['reorg', [2, ]], ['route', '27'],      # route: 27
+    ['CBL',  [1280, 1024, 3], [1024, 125, 1, True, False, 'extra']]       # detection: 13*13*125
+  ]
+
